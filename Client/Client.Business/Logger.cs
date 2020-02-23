@@ -37,6 +37,9 @@ namespace Client.Business
         public void LogError(int i, int j, int chunkSize)
         {
             streamWriterErrors.WriteLine($"{i} {j} {chunkSize}");
+            streamWriterErrors.Flush();
+            Console.SetCursorPosition(0, 3);
+            Console.WriteLine($"Package Error: {i} {j}");
         }
 
         public void Dispose()
