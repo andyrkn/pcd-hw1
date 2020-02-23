@@ -1,24 +1,34 @@
-﻿using Server.Presentation.Constants;
+﻿using Server.Business;
+using Server.Business.Monitor;
+using Server.Presentation.Constants;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Server.Presentation.Controllers
 {
     public abstract class BaseController
     {
         protected TcpClient client;
-        public void Route(TcpClient client)
+        private readonly IClientMonitor monitor;
+        public BaseController(IClientMonitor monitor)
+        {
+            this.monitor = monitor;
+        }
+        public async Task Route(TcpClient client)
         {
             this.client = client;
+            var clientModel = monitor.AddClient(this.client.Client);
 
             var stream = this.client.GetStream();
             var buffer = new byte[7];
             stream.Read(buffer, 0, buffer.Length);
 
-            ResolveController(stream, Encoding.UTF8.GetString(buffer));
+            await ResolveController(stream, Encoding.UTF8.GetString(buffer),clientModel);
+            monitor.RemoveClient(clientModel.id);
         }
 
-        private void ResolveController(NetworkStream stream, string command)
+        private async Task ResolveController(NetworkStream stream, string command, ClientModel clientModel)
         {
             char controller = command[0];
             int transferSize = TransferSizes.GetTransferSize(command[1].ToString());
@@ -26,17 +36,16 @@ namespace Server.Presentation.Controllers
 
             if(controller == '1')
             {
-                SendBytesWithoutCheck(stream, transferSize, chunkSize);
+                await SendBytesWithoutCheck(stream, transferSize, chunkSize, clientModel);
             }
-
-            if (controller == '2')
+            else if (controller == '2')
             {
-                SendBytesWithCheck(stream, transferSize, chunkSize);
+                await SendBytesWithCheck(stream, transferSize, chunkSize, clientModel);
             }
         }
 
-        public abstract void SendBytesWithoutCheck(NetworkStream stream, int transferSize, int chunkSize);
-        public abstract void SendBytesWithCheck(NetworkStream stream, int transferSize, int chunkSize);
+        public abstract Task SendBytesWithoutCheck(NetworkStream stream, int transferSize, int chunkSize, ClientModel clientModel);
+        public abstract Task SendBytesWithCheck(NetworkStream stream, int transferSize, int chunkSize, ClientModel clientModel);
 
     }
 }

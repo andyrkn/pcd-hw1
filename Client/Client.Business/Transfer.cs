@@ -84,7 +84,7 @@ namespace Client.Business
                         data = 0;
                     }
                 }
-                Logger.LogPercentage(i, transferSize);
+                Logger.LogPercentage(i + 1, transferSize);
             }
 
             Logger.Dispose();

@@ -9,6 +9,7 @@ namespace Server.Presentation
         public IServiceCollection Configure(IServiceCollection services)
         {
             services.AddTransient(typeof(ClientController));
+            services.AddSingleton<IClientMonitor, ClientMonitor>();
             services.AddTransient<ITransferService, TransferService>();
 
             return services;

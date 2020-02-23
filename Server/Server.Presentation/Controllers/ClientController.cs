@@ -1,4 +1,5 @@
 ﻿using Server.Business;
+using Server.Business.Monitor;
 using System;
 using System.Net.Sockets;
 using System.Text;
@@ -10,19 +11,19 @@ namespace Server.Presentation.Controllers
     {
         private readonly ITransferService transferService;
 
-        public ClientController(ITransferService transferService)
+        public ClientController(IClientMonitor monitor, ITransferService transferService) :base(monitor)
         {
             this.transferService = transferService;
         }
 
-        public override void SendBytesWithoutCheck(NetworkStream stream, int transferSize, int chunkSize)
+        public async override Task SendBytesWithoutCheck(NetworkStream stream, int transferSize, int chunkSize, ClientModel clientModel)
         {
-            transferService.TransferWithNoCheck(stream, transferSize, chunkSize);
+            await transferService.TransferWithNoCheck(stream, transferSize, chunkSize, clientModel);
         }
 
-        public override void SendBytesWithCheck(NetworkStream stream, int transferSize, int chunkSize)
+        public async override Task SendBytesWithCheck(NetworkStream stream, int transferSize, int chunkSize, ClientModel clientModel)
         {
-            transferService.TransferWithCheck(stream, transferSize, chunkSize);
+            await transferService.TransferWithCheck(stream, transferSize, chunkSize, clientModel);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Server.Business;
 using Server.Presentation.Controllers;
 using System;
 using System.Collections.Generic;
@@ -24,10 +25,10 @@ namespace Server.Presentation.CoreWebHost
             while(true)
             {
                 var client = await listener.AcceptTcpClientAsync();
-                new Thread(new ThreadStart(() =>
+                new Thread(new ThreadStart(async () =>
                 {
                     var controller = (BaseController)provider.GetService(typeof(ClientController));
-                    controller.Route(client);
+                    await controller.Route(client);
                 })).Start();
             }
         }
