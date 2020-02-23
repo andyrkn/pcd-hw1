@@ -1,4 +1,5 @@
-﻿using Server.Presentation.Controllers;
+﻿using Newtonsoft.Json;
+using Server.Presentation.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
@@ -23,7 +24,6 @@ namespace Server.Presentation.CoreWebHost
             while(true)
             {
                 var client = await listener.AcceptTcpClientAsync();
-
                 new Thread(new ThreadStart(() =>
                 {
                     var controller = (BaseController)provider.GetService(typeof(ClientController));

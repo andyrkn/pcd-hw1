@@ -15,9 +15,14 @@ namespace Server.Presentation.Controllers
             this.transferService = transferService;
         }
 
-        public override void SendBytesWithoutCheck(NetworkStream stream, int transferSize)
+        public override void SendBytesWithoutCheck(NetworkStream stream, int transferSize, int chunkSize)
         {
-            transferService.TransferWithNoCheck(stream, transferSize);
+            transferService.TransferWithNoCheck(stream, transferSize, chunkSize);
+        }
+
+        public override void SendBytesWithCheck(NetworkStream stream, int transferSize, int chunkSize)
+        {
+            transferService.TransferWithCheck(stream, transferSize, chunkSize);
         }
     }
 }

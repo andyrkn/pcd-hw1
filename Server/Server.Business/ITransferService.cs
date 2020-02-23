@@ -5,6 +5,7 @@ namespace Server.Business
 {
     public interface ITransferService
     {
-        void TransferWithNoCheck(NetworkStream networkStream, int transferSize);
+        void TransferWithNoCheck(NetworkStream networkStream, int transferSize, int chunkSize);
+        void TransferWithCheck(NetworkStream networkStream, int transferSize, int chunkSize);
     }
 }

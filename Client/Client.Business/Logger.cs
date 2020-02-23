@@ -1,22 +1,50 @@
 ﻿using System;
-using System.ComponentModel;
+using System.IO;
 
 namespace Client.Business
 {
-    public sealed class Logger
+    public sealed class Logger : IDisposable
     {
-        public static void Connected() => Console.WriteLine("Connected");
+        private string FileName { get; set; }
+        private StreamWriter streamWriter;
+        private StreamWriter streamWriterErrors;
+
+        public void Connected(int transferSize, int chunkSize)
+        { 
+            Console.WriteLine("Connected");
+            FileName = $"{DateTime.Now.ToString("hh-mm-ss")}_{transferSize}_{chunkSize}";
+            streamWriter = new StreamWriter(FileName + ".txt", true);
+            streamWriterErrors = new StreamWriter(FileName + "_errors.txt", true);
+        }
         
-        public static void LogSpeed(int data)
+        public void LogSpeed(int data)
         {
+            var speedLog = $"{Math.Round((double)data / 1048576 * 10, 3, MidpointRounding.ToPositiveInfinity)}";
+
             Console.SetCursorPosition(0, 1);
-            Console.WriteLine($"{(double) data /  1048576 * 10} MB/s");
+            Console.WriteLine($"{speedLog} MB/s         ");
+            streamWriter.WriteLine(speedLog);
+        }
+       
+
+        public void LogPercentage(int percent, int transferSize)
+        {
+            var log = $"{percent * 100 / transferSize} %";
+            Console.SetCursorPosition(0, 2);
+            Console.WriteLine(log);
         }
 
-        public static void LogPercentage(int percent, int transferSize)
+        public void LogError(int i, int j, int chunkSize)
         {
-            Console.SetCursorPosition(0, 2);
-            Console.WriteLine($"{percent * 100 / transferSize} %");
+            streamWriterErrors.WriteLine($"{i} {j} {chunkSize}");
+        }
+
+        public void Dispose()
+        {
+            streamWriter.Flush();
+            streamWriter.Dispose();
+            streamWriterErrors.Flush();
+            streamWriterErrors.Dispose();
         }
     }
 }

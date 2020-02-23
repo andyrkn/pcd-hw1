@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,22 +13,62 @@ namespace Client.Business
     {
         private readonly int OneMb = 1048576;
         private Stopwatch watch = new Stopwatch();
-        public async Task Start(TcpClient client, int transferSize, int chunkSize)
+        private readonly Logger Logger = new Logger();
+        public async Task ReadWithoutCheck(TcpClient client, int transferSize, int chunkSize)
         {
-            Logger.Connected();
+            Logger.Connected(transferSize, chunkSize);
             var stream = client.GetStream();
 
-            using var sw = new StreamWriter(DateTime.Now.Ticks.ToString(), true);
-            await ReadFromStream(transferSize, chunkSize, async () =>
+            await ReadFromStream(transferSize, chunkSize, async (i,j) =>
             {
-                // var data = new string('1', chunkSize);
                 var data = new byte[chunkSize];
-                var result = await stream.ReadAsync(data);
-                sw.Write(Encoding.UTF8.GetString(data));
+                var totalBytesOverNetwork = await stream.ReadAsync(data);
+
+                return totalBytesOverNetwork;
             });
         }
 
-        public async Task ReadFromStream(int transferSize, int chunkSize, Func<Task> readAction)
+        public async Task ReadWithCheck(TcpClient client, int transferSize, int chunkSize)
+        {
+            Logger.Connected(transferSize, chunkSize);
+            var stream = client.GetStream();
+            using var hasher = SHA256.Create();
+
+            await ReadFromStream(transferSize, chunkSize, async (i,j) =>
+            {
+                var totalBytesOverNetwork = 0;
+                var accepted = false;
+                while (!accepted)
+                {
+                    var dataHash = new byte[32];
+                    var data = new byte[chunkSize];
+
+                    await stream.ReadAsync(dataHash);
+                    totalBytesOverNetwork += chunkSize;
+
+                    await stream.ReadAsync(data);
+                    totalBytesOverNetwork += 32;
+
+                    var actualHash = hasher.ComputeHash(data);
+
+                    if (((ReadOnlySpan<byte>)dataHash).SequenceEqual(actualHash))
+                    {
+                        await stream.WriteAsync(Encoding.UTF8.GetBytes("ok"));
+                        totalBytesOverNetwork += 2;
+                        accepted = true;
+                    }
+                    else
+                    {
+                        await stream.WriteAsync(Encoding.UTF8.GetBytes("no"));
+                        Logger.LogError(i, j, chunkSize);
+                    }
+                }
+
+                return totalBytesOverNetwork;
+            });
+        }
+
+        public async Task ReadFromStream(int transferSize, int chunkSize, Func<int,int,Task<int>> readAction)
         {
             watch.Start();
             var data = 0;
@@ -34,9 +76,8 @@ namespace Client.Business
             {
                 for (int j = 0; j < OneMb; j += chunkSize)
                 {
-                    await readAction();
-                    data += chunkSize;
-                    if(watch.ElapsedMilliseconds > 100)
+                    data += await readAction(i,j);
+                    if (watch.ElapsedMilliseconds > 100)
                     {
                         Logger.LogSpeed(data);
                         watch.Restart();
@@ -45,18 +86,8 @@ namespace Client.Business
                 }
                 Logger.LogPercentage(i, transferSize);
             }
-        }
 
-        public string Generate(int chunkSize)
-        {
-            var sb = new StringBuilder();
-
-            for(int i = 0; i < chunkSize; i+=32)
-            {
-                sb.Append(Guid.NewGuid().ToString("n"));
-            }
-
-            return sb.ToString();
+            Logger.Dispose();
         }
     }
 }

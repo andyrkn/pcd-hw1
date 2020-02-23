@@ -22,13 +22,17 @@ namespace Client.Presentation
             TcpClient client = new TcpClient();
             client.Connect(adress, int.Parse(port));
 
-            var buffer = new byte[2];
-            buffer = Encoding.UTF8.GetBytes(argv[0]);
+            var buffer = Encoding.UTF8.GetBytes($"{argv[0]}{chunk}");
+            chunk = chunk.Trim('_');
 
             client.GetStream().Write(buffer, 0, buffer.Length);
 
-            await new Transfer()
-                .Start(client, TransferSizes.GetTransferSize(argv[0]), int.Parse(chunk));
+
+            if (argv[0][0] == '1') await new Transfer().ReadWithoutCheck(client, TransferSizes.GetTransferSize(argv[0]), int.Parse(chunk));
+            else                   await new Transfer().ReadWithCheck(client, TransferSizes.GetTransferSize(argv[0]), int.Parse(chunk));
+
+            Console.WriteLine("Done");
+            client.Client.Disconnect(true);
         }
     }
 }
