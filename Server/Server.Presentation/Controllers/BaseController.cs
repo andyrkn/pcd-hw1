@@ -24,7 +24,7 @@ namespace Server.Presentation.Controllers
             var buffer = new byte[7];
             stream.Read(buffer, 0, buffer.Length);
 
-            await ResolveController(stream, Encoding.UTF8.GetString(buffer),clientModel);
+            await ResolveController(stream, Encoding.ASCII.GetString(buffer),clientModel);
             monitor.RemoveClient(clientModel.id);
         }
 

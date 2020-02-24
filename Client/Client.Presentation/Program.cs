@@ -22,7 +22,7 @@ namespace Client.Presentation
             TcpClient client = new TcpClient();
             client.Connect(adress, int.Parse(port));
 
-            var buffer = Encoding.UTF8.GetBytes($"{argv[0]}{chunk}");
+            var buffer = Encoding.ASCII.GetBytes($"{argv[0]}{chunk}");
             chunk = chunk.Trim('_');
 
             client.GetStream().Write(buffer, 0, buffer.Length);

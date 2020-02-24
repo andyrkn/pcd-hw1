@@ -26,7 +26,7 @@ namespace Server.Business
             await WriteToStream(transferSize, chunkSize, clientModel, async () =>
             {
                 var data = Generate(chunkSize);
-                await networkStream.WriteAsync(Encoding.UTF8.GetBytes(data));
+                await networkStream.WriteAsync(Encoding.ASCII.GetBytes(data));
                 return chunkSize;
             });
         }
@@ -40,22 +40,22 @@ namespace Server.Business
                 var sent = 0;
                 var accepted = false;
                 var data = Generate(chunkSize);
-                var dataBytes = Encoding.UTF8.GetBytes(data);
+                var dataBytes = Encoding.ASCII.GetBytes(data);
                 var dataHash = hasher.ComputeHash(dataBytes);
 
                 while (!accepted)
                 {
                     // var data = new string('1', chunkSize);
 
-                    await networkStream.WriteAsync(dataHash);
+                    networkStream.Write(dataHash, 0, dataHash.Length);
                     await networkStream.WriteAsync(dataBytes);
 
                     var buffer = new byte[2];
-
+                    
                     await networkStream.ReadAsync(buffer);
 
                     sent += chunkSize + 34;
-                    if (Encoding.UTF8.GetString(buffer) == "ok")
+                    if (Encoding.ASCII.GetString(buffer) == "ok")
                     {
                         accepted = true;
                     }

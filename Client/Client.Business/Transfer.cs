@@ -42,24 +42,31 @@ namespace Client.Business
                 {
                     var dataHash = new byte[32];
                     var data = new byte[chunkSize];
-
-                    await stream.ReadAsync(dataHash);
-                    totalBytesOverNetwork += chunkSize;
-
-                    await stream.ReadAsync(data);
+                    int hashRead = 0;
+                    while (hashRead < 32)
+                    {
+                        hashRead += await stream.ReadAsync(dataHash, hashRead, 32);
+                    }
                     totalBytesOverNetwork += 32;
+
+                    int dataRead = 0;
+                    while (dataRead < chunkSize)
+                    {
+                        dataRead += await stream.ReadAsync(data, dataRead, chunkSize);
+                    }
+                    totalBytesOverNetwork += chunkSize;
 
                     var actualHash = hasher.ComputeHash(data);
 
                     if (((ReadOnlySpan<byte>)dataHash).SequenceEqual(actualHash))
                     {
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes("ok"));
+                        await stream.WriteAsync(Encoding.ASCII.GetBytes("ok"));
                         totalBytesOverNetwork += 2;
                         accepted = true;
                     }
                     else
                     {
-                        await stream.WriteAsync(Encoding.UTF8.GetBytes("no"));
+                        await stream.WriteAsync(Encoding.ASCII.GetBytes("no"));
                         Logger.LogError(i, j, chunkSize);
                     }
                 }
