@@ -46,7 +46,7 @@ namespace Server.Business
                 while (!accepted)
                 {
                     networkStream.Write(dataHash, 0, dataHash.Length);
-                    networkStream.Write(dataBytes, 0, dataBytes.Length);
+                    await networkStream.WriteAsync(dataBytes);
 
                     var buffer = new byte[2];
                     
