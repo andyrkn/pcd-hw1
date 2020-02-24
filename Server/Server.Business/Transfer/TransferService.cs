@@ -45,15 +45,12 @@ namespace Server.Business
 
                 while (!accepted)
                 {
-                    // var data = new string('1', chunkSize);
-
                     networkStream.Write(dataHash, 0, dataHash.Length);
-                    await networkStream.WriteAsync(dataBytes);
+                    networkStream.Write(dataBytes, 0, dataBytes.Length);
 
                     var buffer = new byte[2];
                     
                     await networkStream.ReadAsync(buffer);
-
                     sent += chunkSize + 34;
                     if (Encoding.ASCII.GetString(buffer) == "ok")
                     {

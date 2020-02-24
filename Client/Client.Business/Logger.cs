@@ -17,13 +17,13 @@ namespace Client.Business
             streamWriterErrors = new StreamWriter(FileName + "_errors.txt", true);
         }
         
-        public void LogSpeed(int data)
+        public void LogSpeed(int data, long ms)
         {
             var speedLog = $"{Math.Round((double)data / 1048576 * 10, 3, MidpointRounding.ToPositiveInfinity)}";
 
             Console.SetCursorPosition(0, 1);
             Console.WriteLine($"{speedLog} MB/s         ");
-            streamWriter.WriteLine(speedLog);
+            streamWriter.WriteLine($"{data} {speedLog} {ms}");
         }
        
 

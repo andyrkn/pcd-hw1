@@ -33,6 +33,7 @@ namespace Client.Business
             Logger.Connected(transferSize, chunkSize);
             var stream = client.GetStream();
             using var hasher = SHA256.Create();
+            using var sw = new StreamWriter($"{DateTime.Now.ToString("hh-mm-ss")}rawFile");
 
             await ReadFromStream(transferSize, chunkSize, async (i,j) =>
             {
@@ -42,18 +43,12 @@ namespace Client.Business
                 {
                     var dataHash = new byte[32];
                     var data = new byte[chunkSize];
-                    int hashRead = 0;
-                    while (hashRead < 32)
-                    {
-                        hashRead += await stream.ReadAsync(dataHash, hashRead, 32);
-                    }
+
+                    stream.Read(dataHash, 0, 32);         
                     totalBytesOverNetwork += 32;
 
-                    int dataRead = 0;
-                    while (dataRead < chunkSize)
-                    {
-                        dataRead += await stream.ReadAsync(data, dataRead, chunkSize);
-                    }
+                    await stream.ReadAsync(data, 0, chunkSize);
+
                     totalBytesOverNetwork += chunkSize;
 
                     var actualHash = hasher.ComputeHash(data);
@@ -61,6 +56,7 @@ namespace Client.Business
                     if (((ReadOnlySpan<byte>)dataHash).SequenceEqual(actualHash))
                     {
                         await stream.WriteAsync(Encoding.ASCII.GetBytes("ok"));
+                        await sw.WriteAsync(Encoding.ASCII.GetString(data));
                         totalBytesOverNetwork += 2;
                         accepted = true;
                     }
@@ -86,7 +82,7 @@ namespace Client.Business
                     data += await readAction(i,j);
                     if (watch.ElapsedMilliseconds > 100)
                     {
-                        Logger.LogSpeed(data);
+                        Logger.LogSpeed(data, watch.ElapsedMilliseconds);
                         watch.Restart();
                         data = 0;
                     }

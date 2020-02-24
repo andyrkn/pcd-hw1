@@ -1,6 +1,7 @@
 ﻿using Server.Business;
 using Server.Business.Monitor;
 using Server.Presentation.Constants;
+using System;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +25,16 @@ namespace Server.Presentation.Controllers
             var buffer = new byte[7];
             stream.Read(buffer, 0, buffer.Length);
 
-            await ResolveController(stream, Encoding.ASCII.GetString(buffer),clientModel);
-            monitor.RemoveClient(clientModel.id);
+            try
+            {
+                await ResolveController(stream, Encoding.ASCII.GetString(buffer), clientModel);
+            }
+            catch (Exception ex)
+            {   }
+            finally
+            {
+                monitor.RemoveClient(clientModel.id);
+            }
         }
 
         private async Task ResolveController(NetworkStream stream, string command, ClientModel clientModel)
