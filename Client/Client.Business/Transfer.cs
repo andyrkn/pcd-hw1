@@ -18,11 +18,13 @@ namespace Client.Business
         {
             Logger.Connected(transferSize, chunkSize);
             var stream = client.GetStream();
+            using var sw = new StreamWriter($"{DateTime.Now.ToString("hh-mm-ss")}rawFile");
 
             await ReadFromStream(transferSize, chunkSize, async (i,j) =>
             {
                 var data = new byte[chunkSize];
                 var totalBytesOverNetwork = await stream.ReadAsync(data);
+                await sw.WriteAsync(Encoding.ASCII.GetString(data));
 
                 return totalBytesOverNetwork;
             });
