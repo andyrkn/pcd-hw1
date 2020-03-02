@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Client.Presentation": {
+      "commandName": "Project",
+      "commandLineArgs": "100"
+    }
+  }
+}
