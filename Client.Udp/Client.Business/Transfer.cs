@@ -30,13 +30,13 @@ namespace Client.Business
                 {
                     var buffer = new byte[chunkSize];
                     readBytes += socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
-                    
                     if (readBytes > OMB)
                     {
                         readBytes -= OMB;
                         MB += 1;
                     }
-                }   
+                }  
+                Console.WriteLine(i);
             }
 
             var stats = $"{MB} {readBytes} {timer.Elapsed.TotalSeconds}";

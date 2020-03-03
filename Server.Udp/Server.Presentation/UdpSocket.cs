@@ -10,7 +10,6 @@ namespace Server.Presentation
     public sealed class UdpSocket
     {
         private Socket Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        private AsyncCallback Recv = null;
 
         public UdpSocket()
         {
@@ -30,7 +29,6 @@ namespace Server.Presentation
 
             var transfer = new Transfer(Socket);
             transfer.StartSending(transferSize, chunkSize, endPoint);
-            transfer.Dispose();
         }
     }
 }

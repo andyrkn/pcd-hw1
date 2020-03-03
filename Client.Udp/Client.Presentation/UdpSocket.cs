@@ -23,7 +23,7 @@ namespace Server.Presentation
 
             var bytes = Encoding.ASCII.GetBytes(transferInfo);
             Socket.Send(bytes, SocketFlags.None);
-
+            Console.WriteLine("Connected");
             new Transfer(Socket).StartRead(transferSize, int.Parse(chunkSize.Trim('_')));
         }
 
