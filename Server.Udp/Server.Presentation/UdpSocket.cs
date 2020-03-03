@@ -23,6 +23,8 @@ namespace Server.Presentation
             var endPoint = (EndPoint)(new IPEndPoint(IPAddress.Any, 0));
             Socket.ReceiveFrom(buff, ref endPoint);
 
+            Socket.Connect(endPoint);
+
             var transferInfo = Encoding.ASCII.GetString(buff).Split('_');
             var transferSize = int.Parse(transferInfo[0].Trim('_'));
             var chunkSize = int.Parse(transferInfo[1].Trim('_'));
