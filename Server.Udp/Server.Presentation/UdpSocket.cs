@@ -25,9 +25,10 @@ namespace Server.Presentation
 
             Socket.Connect(endPoint);
 
-            var transferInfo = Encoding.ASCII.GetString(buff).Split('_');
-            var transferSize = int.Parse(transferInfo[0].Trim('_'));
-            var chunkSize = int.Parse(transferInfo[1].Trim('_'));
+            var transferInfo = Encoding.ASCII.GetString(buff);
+            var transferSize = int.Parse(transferInfo.Substring(0, 3));
+            var chunkStream = transferInfo.Substring(3,5);
+            var chunkSize = int.Parse(chunkStream.Trim('_'));
 
             var transfer = new Transfer(Socket);
             transfer.StartSending(transferSize, chunkSize, endPoint);
