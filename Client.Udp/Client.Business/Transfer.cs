@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using Timer = System.Timers.Timer;
 
 namespace Client.Business
 {
@@ -19,6 +21,9 @@ namespace Client.Business
 
         public void StartRead(int transferSize, int chunkSize)
         {
+            //using var sw = new StreamWriter($"data_{transferSize}_{chunkSize}_{DateTime.Now:hh:mm:ss}");
+            var timer = new Stopwatch();
+            timer.Start();
             for (int i = 0; i < transferSize; i++)
             {
                 for (int j = 0; j < OMB; j += chunkSize)
@@ -31,25 +36,11 @@ namespace Client.Business
                         readBytes -= OMB;
                         MB += 1;
                     }
-                }
-                Console.WriteLine(i);
-                Console.WriteLine($"{MB} {readBytes}");
+                }   
             }
 
-        }
-
-        public void ReadCallback(IAsyncResult ar)
-        {
-            var s = (Socket)ar.AsyncState;
-            var b = s.EndReceive(ar);
-
-            readBytes += b;
-
-            if (readBytes > OMB)
-            {
-                readBytes -= OMB;
-                MB += 1;
-            }
+            var stats = $"{MB} {readBytes} {timer.Elapsed.TotalSeconds}";
+            Console.WriteLine(stats);
         }
     }
 }

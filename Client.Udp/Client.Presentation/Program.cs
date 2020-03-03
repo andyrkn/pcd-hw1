@@ -18,7 +18,6 @@ namespace Client.Presentation
             var chunkSize = config.GetSection("chunkSize").Value;
             var ip = config.GetSection("ip").Value;
             var tSize = int.Parse(args[0]);
-
             UdpSocket socket = new UdpSocket();
             socket.Start(ip, port, tSize, chunkSize);
         }
